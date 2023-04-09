@@ -1,7 +1,9 @@
 let data;
+let exp;
 let fr = new FileReader();
 let str1 = "games.rednblack.editor.renderer.data.SimpleImageVO";
 let str2 = "games.rednblack.editor.renderer.data.CompositeItemVO";
+let str3 = "games.rednblack.editor.renderer.data.LabelVO"
 
 // Represents the player. 
 let player;
@@ -21,19 +23,31 @@ let platforms = [];
 // Represents the number of platforms.
 let size = 0;
 
-// Represetns the cooldown.
+// Represents the cooldown.
 let cooldown;
+
+// Represents the meteor probabilities.
+let meteor_probabilities;
+
 
 fr.onload = () => {
     data = JSON.parse(fr.result);
     let simples = data.composite.content[str1];
     let composites = data.composite.content[str2];
+    let constants = data.composite.content[str3];
 
     // Gets player.
     player = simples.filter(e => e.itemIdentifier == "Player")[0];
 
     // Gets cooldown.
-    cooldown = composites.filter(e => e.customVariables?.CD != undefined)[0]?.customVariables.CD ?? 100;
+    cooldown = constants[0]?.customVariables.CD ?? 0;
+
+    // Gets meteor probabilities.
+    meteor_probabilities = {
+        "random_meteor_probability": constants[0]?.customVariables.RMP ?? 0,
+        "targeted_meteor_probability": constants[0]?.customVariables.TMP ?? 0,
+        "homing_meteor_probability": constants[0]?.customVariables.HMP ?? 0
+    }
 
     // Gets resources.
     resources = simples.filter(e => e.itemIdentifier == "Resource").map((e) => {
@@ -118,6 +132,7 @@ fr.onload = () => {
                 // Parse and return spikes.
                 platSpike.content[str1].map((s) => {
                     let spikeAngle = (s.rotation ?? 0);
+                    spikeAngle = spikeAngle < 0 ? 360 + spikeAngle : spikeAngle;
                     let x = (((s.x ?? 0) + (platSpike.x ?? 0) + offset[spikeAngle/90][0]) * c1 - ((s.y ?? 0) + (platSpike.y ?? 0) + offset[spikeAngle/90][1]) * s1 + (platGroup.x ?? 0)) / 100;
                     let y = (((s.x ?? 0) + (platSpike.x ?? 0) + offset[spikeAngle/90][0]) * s1 + ((s.y ?? 0) + (platSpike.y ?? 0) + offset[spikeAngle/90][1]) * c1 + (platGroup.y ?? 0)) / 100;
                     let angle = a1 + (s.rotation ?? 0)*(Math.PI/180);
@@ -149,14 +164,16 @@ fr.onload = () => {
     });
 
     // Represents the level.
-    let exp = {
+    exp = {
         "level" : {
             "player": [0.5 + (player.x ?? 0)/100, 0.5 + (player.y ?? 0)/100],
             "resources": resources,
             "size": size,
             "cooldown": cooldown,
+            "meteor_probabilities": meteor_probabilities,
             "platforms": platforms,
-            "stationary_hazards": spikes
+            "stationary_hazards": spikes,
+            "lava_hazards": []
         }
     };
 
