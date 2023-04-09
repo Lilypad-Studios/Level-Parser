@@ -81,6 +81,7 @@ fr.onload = () => {
         // Parse and return spikes.
         e.content[str1].map((s) => {
             let spikeAngle = (s.rotation ?? 0);
+            spikeAngle = spikeAngle < 0 ? 360 + spikeAngle : spikeAngle;
             let x = (((s.x ?? 0) + offset[spikeAngle/90][0]) * c1 - ((s.y ?? 0) + offset[spikeAngle/90][1]) * s1 + (e.x ?? 0)) / 100;
             let y = (((s.x ?? 0) + offset[spikeAngle/90][0]) * s1 + ((s.y ?? 0) + offset[spikeAngle/90][1]) * c1 + (e.y ?? 0)) / 100;
             let angle = a1 + spikeAngle*(Math.PI/180);
