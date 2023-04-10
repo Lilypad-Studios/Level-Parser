@@ -5,6 +5,12 @@ let str1 = "games.rednblack.editor.renderer.data.SimpleImageVO";
 let str2 = "games.rednblack.editor.renderer.data.CompositeItemVO";
 let str3 = "games.rednblack.editor.renderer.data.LabelVO"
 
+// Represents the dimensions of the tile asset in pixels.
+const tileSize = 64;
+
+// Represents the spike size.
+const spikeSize = 100;
+
 // Represents the player. 
 let player;
 
@@ -15,13 +21,10 @@ let resources;
 let spikes = [];
 
 // Spike offset.
-let offset = [[0,0], [100, 0], [100, 100], [0, 100]];
+let offset = [[0,0], [spikeSize, 0], [spikeSize, spikeSize], [0, spikeSize]];
 
 // Represents the platforms.
 let platforms = [];
-
-// Represents the number of platforms.
-let size = 0;
 
 // Represents the cooldown.
 let cooldown;
@@ -52,9 +55,9 @@ fr.onload = () => {
     // Gets resources.
     resources = simples.filter(e => e.itemIdentifier == "Resource").map((e) => {
         return {
-            "pos": [((e.x ?? 0) + 50)/100, ((e.y ?? 0) + 50)/100],
+            "pos": [((e.x ?? 0) + 50)/tileSize, ((e.y ?? 0) + 50)/tileSize],
             "angle": (e.rotation ?? 0) * (Math.PI/180),
-            "rotation_center" : [16 + (e.customVariables.CX ?? 0)/100, 9 + (e.customVariables.CY ?? 0)/100],
+            "rotation_center" : [16 + (e.customVariables.CX ?? 0)/tileSize, 9 + (e.customVariables.CY ?? 0)/tileSize],
             "rotation_velocity": e.customVariables.AV ?? 0
         };
     });
@@ -82,13 +85,13 @@ fr.onload = () => {
         e.content[str1].map((s) => {
             let spikeAngle = (s.rotation ?? 0);
             spikeAngle = spikeAngle < 0 ? 360 + spikeAngle : spikeAngle;
-            let x = (((s.x ?? 0) + offset[spikeAngle/90][0]) * c1 - ((s.y ?? 0) + offset[spikeAngle/90][1]) * s1 + (e.x ?? 0)) / 100;
-            let y = (((s.x ?? 0) + offset[spikeAngle/90][0]) * s1 + ((s.y ?? 0) + offset[spikeAngle/90][1]) * c1 + (e.y ?? 0)) / 100;
+            let x = (((s.x ?? 0) + offset[spikeAngle/90][0]) * c1 - ((s.y ?? 0) + offset[spikeAngle/90][1]) * s1 + (e.x ?? 0)) / tileSize;
+            let y = (((s.x ?? 0) + offset[spikeAngle/90][0]) * s1 + ((s.y ?? 0) + offset[spikeAngle/90][1]) * c1 + (e.y ?? 0)) / tileSize;
             let angle = a1 + spikeAngle*(Math.PI/180);
             let [cos, sin] = [Math.cos(angle), Math.sin(angle)]; 
             spikes.push({
                 "points": [x, y, x + cos, y + sin, 0.5*cos - 0.75*sin + x, 0.5*sin + 0.75*cos + y],
-                "rotation_center": [16 + e.customVariables.CX/100, 9 + e.customVariables.CY/100],
+                "rotation_center": [16 + e.customVariables.CX/tileSize, 9 + e.customVariables.CY/tileSize],
                 "rotation_velocity": e.customVariables.AV,
                 "texture": "black"
             });
@@ -134,13 +137,13 @@ fr.onload = () => {
                 platSpike.content[str1].map((s) => {
                     let spikeAngle = (s.rotation ?? 0);
                     spikeAngle = spikeAngle < 0 ? 360 + spikeAngle : spikeAngle;
-                    let x = (((s.x ?? 0) + (platSpike.x ?? 0) + offset[spikeAngle/90][0]) * c1 - ((s.y ?? 0) + (platSpike.y ?? 0) + offset[spikeAngle/90][1]) * s1 + (platGroup.x ?? 0)) / 100;
-                    let y = (((s.x ?? 0) + (platSpike.x ?? 0) + offset[spikeAngle/90][0]) * s1 + ((s.y ?? 0) + (platSpike.y ?? 0) + offset[spikeAngle/90][1]) * c1 + (platGroup.y ?? 0)) / 100;
+                    let x = (((s.x ?? 0) + (platSpike.x ?? 0) + offset[spikeAngle/90][0]) * c1 - ((s.y ?? 0) + (platSpike.y ?? 0) + offset[spikeAngle/90][1]) * s1 + (platGroup.x ?? 0)) / tileSize;
+                    let y = (((s.x ?? 0) + (platSpike.x ?? 0) + offset[spikeAngle/90][0]) * s1 + ((s.y ?? 0) + (platSpike.y ?? 0) + offset[spikeAngle/90][1]) * c1 + (platGroup.y ?? 0)) / tileSize;
                     let angle = a1 + (s.rotation ?? 0)*(Math.PI/180);
                     let [cos, sin] = [Math.cos(angle), Math.sin(angle)]; 
                     spikes.push({
                         "points": [x, y, x + cos, y + sin, 0.5*cos - 0.75*sin + x, 0.5*sin + 0.75*cos + y],
-                        "rotation_center": [16 + platGroup.customVariables.CX/100, 9 + platGroup.customVariables.CY/100],
+                        "rotation_center": [16 + platGroup.customVariables.CX/tileSize, 9 + platGroup.customVariables.CY/tileSize],
                         "rotation_velocity": platGroup.customVariables.AV,
                         "texture": "black"
                     });
@@ -152,24 +155,26 @@ fr.onload = () => {
     platforms = [...composites.filter(el => el.itemIdentifier.includes("Platform")), ...platforms].map((e) => {
         let rotation = (e.rotation ?? 0) * (Math.PI/180);
         let [cos, sin] = [Math.cos(rotation), Math.sin(rotation)];
-        let [x, y] = [(e.x ?? 0)/100, (e.y ?? 0)/100];
-        let [h, w] = [e.height/100, e.width/100];
-        size++;
+        let [x, y] = [(e.x ?? 0)/tileSize, (e.y ?? 0)/tileSize];
+        let [h, w] = [e.height/tileSize, e.width/tileSize];
         return {
             "island": [
                 [x - h*sin, y + h*cos, x, y, x + w*cos, y + w*sin, x - h*sin + w*cos, y + h*cos + w*sin]
             ],
-            "rotation_center": [16 + e.customVariables.CX/100, 9 + e.customVariables.CY/100],
-            "rotation_velocity": e.customVariables.AV
+            "rotation_center": [16 + e.customVariables.CX/tileSize, 9 + e.customVariables.CY/tileSize],
+            "rotation_velocity": e.customVariables.AV,
+            "size": e.content[str1].length,
+            "tiling": e.content[str1].map((t) => {
+                return [(t.x ?? 0)/64, (t.y ?? 0)/64, 0];
+            })
         };
     });
 
     // Represents the level.
     exp = {
         "level" : {
-            "player": [0.5 + (player.x ?? 0)/100, 0.5 + (player.y ?? 0)/100],
+            "player": [0.5 + (player.x ?? 0)/tileSize, 0.5 + (player.y ?? 0)/tileSize],
             "resources": resources,
-            "size": size,
             "cooldown": cooldown,
             "meteor_probabilities": meteor_probabilities,
             "platforms": platforms,
