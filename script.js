@@ -32,6 +32,8 @@ let cooldown;
 // Represents the meteor probabilities.
 let meteor_probabilities;
 
+// Represents the number of platforms.
+let size = 0;
 
 fr.onload = () => {
     data = JSON.parse(fr.result);
@@ -157,6 +159,7 @@ fr.onload = () => {
         let [cos, sin] = [Math.cos(rotation), Math.sin(rotation)];
         let [x, y] = [(e.x ?? 0)/tileSize, (e.y ?? 0)/tileSize];
         let [h, w] = [e.height/tileSize, e.width/tileSize];
+        size++;
         return {
             "island": [
                 [x - h*sin, y + h*cos, x, y, x + w*cos, y + w*sin, x - h*sin + w*cos, y + h*cos + w*sin]
@@ -176,6 +179,7 @@ fr.onload = () => {
             "player": [0.5 + (player.x ?? 0)/tileSize, 0.5 + (player.y ?? 0)/tileSize],
             "resources": resources,
             "cooldown": cooldown,
+            "size": size,
             "meteor_probabilities": meteor_probabilities,
             "platforms": platforms,
             "stationary_hazards": spikes,
