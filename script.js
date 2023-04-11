@@ -165,7 +165,7 @@ fr.onload = () => {
             "size": e.content[str1].length,
             "tiling": e.content[str1].map((t) => {
                 let imageName = t.imageName.match(/\d+/g);
-                let tileIndex = parseInt(imageName[0]) + parseInt(12*imageName[2]);
+                let tileIndex = parseInt(imageName[0]) + parseInt(4*imageName[2]);
                 return [Math.round((t.x ?? 0)/tileSize), Math.round((t.y ?? 0)/tileSize), isNaN(tileIndex) ? 0 : tileIndex];
             })
         };
