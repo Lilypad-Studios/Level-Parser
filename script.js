@@ -6,10 +6,10 @@ let str2 = "games.rednblack.editor.renderer.data.CompositeItemVO";
 let str3 = "games.rednblack.editor.renderer.data.LabelVO"
 
 // Represents the dimensions of the tile asset in pixels.
-const tileSize = 64;
+let tileSize = 128;
 
 // Represents the spike size.
-const spikeSize = 100;
+let spikeSize = 100;
 
 // Represents the player. 
 let player;
@@ -164,7 +164,9 @@ fr.onload = () => {
             "rotation_velocity": e.customVariables.AV,
             "size": e.content[str1].length,
             "tiling": e.content[str1].map((t) => {
-                return [Math.round((t.x ?? 0)/64), Math.round((t.y ?? 0)/64), 0];
+                let imageName = t.imageName.match(/\d+/g);
+                let tileIndex = parseInt(imageName[0]) + parseInt(12*imageName[2]);
+                return [Math.round((t.x ?? 0)/tileSize), Math.round((t.y ?? 0)/tileSize), isNaN(tileIndex) ? 0 : tileIndex];
             })
         };
     });
@@ -190,4 +192,16 @@ fr.onload = () => {
 
 document.getElementById('inputfile').onchange = (e) => {
     fr.readAsText(e.target.files[0]);
+}
+
+document.getElementById('submit').onclick = (e) => {
+    document.getElementById('form').style.display = "block";
+    document.getElementById('submitDiv').style.display = "none";
+
+    if (document.getElementById('tile').value != "") {
+        tileSize = parseInt(document.getElementById('tile').value);
+    }
+    if (document.getElementById('spike').value != "") {
+        spikeSize = parseInt(document.getElementById('spike').value);
+    }
 }

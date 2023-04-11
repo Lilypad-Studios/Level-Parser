@@ -11,8 +11,16 @@
 <body>
     <div>
         <h1>Cosmic Swing JSON Parser</h1>
+
+        <div id="submitDiv">
+            <p>Input the tile size (defaults to 128):</p>
+            <input id="tile" type="text">
+            <p>Input the spike size (defaults to 100)</p>
+            <input id="spike" type="text">
+            <button id="submit">Submit</button>
+        </div>
     
-        <div>
+        <div id="form" style="display: none">
             <p>Upload the .dt file to convert to JSON:</p>
             <input type="file" name="inputfile" id="inputfile">
             <br>
