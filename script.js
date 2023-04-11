@@ -164,7 +164,7 @@ fr.onload = () => {
             "rotation_velocity": e.customVariables.AV,
             "size": e.content[str1].length,
             "tiling": e.content[str1].map((t) => {
-                return [(t.x ?? 0)/64, (t.y ?? 0)/64, 0];
+                return [Math.round((t.x ?? 0)/64), Math.round((t.y ?? 0)/64), 0];
             })
         };
     });
