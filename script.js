@@ -32,6 +32,9 @@ let cooldown;
 // Represents the meteor probabilities.
 let meteor_probabilities;
 
+// Represents the boundaries.
+let boundaries;
+
 fr.onload = () => {
     data = JSON.parse(fr.result);
     let simples = data.composite.content[str1];
@@ -43,6 +46,14 @@ fr.onload = () => {
 
     // Gets cooldown.
     cooldown = constants[0]?.customVariables.CD ?? 0;
+
+    // Gets boundaries
+    boundaries = {
+        "left" : constants[0]?.customVariables.LB ?? -16,
+        "right" : constants[0]?.customVariables.RB ?? 48,
+        "down" : constants[0]?.customVariables.DB ?? -32,
+        "up" : constants[0]?.customVariables.UB ?? 50
+    }
 
     // Gets meteor probabilities.
     meteor_probabilities = {
@@ -192,7 +203,8 @@ fr.onload = () => {
             "meteor_probabilities": meteor_probabilities,
             "platforms": platforms,
             "stationary_hazards": spikes,
-            "lava_hazards": []
+            "lava_hazards": [],
+            "boundaries": boundaries
         }
     };
 
