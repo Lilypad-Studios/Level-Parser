@@ -92,7 +92,7 @@ fr.onload = () => {
         }));
 
         // Parse and return spikes.
-        e.content[str1].map((s) => {
+        e.content[str1].filter((el) => el.imageName == "spike").map((s) => {
             let spikeAngle = (s.rotation ?? 0);
             spikeAngle = spikeAngle < 0 ? 360 + spikeAngle : spikeAngle;
             let x = (((s.x ?? 0) + offset[spikeAngle/90][0]) * c1 - ((s.y ?? 0) + offset[spikeAngle/90][1]) * s1 + (e.x ?? 0)) / tileSize;
@@ -145,7 +145,7 @@ fr.onload = () => {
                     e.customVariables.AV = platGroup.customVariables.AV;
 
                     // Parse and return spikes.
-                    platSpike.content[str1].map((s) => {
+                    platSpike.content[str1].filter((el) => el.imageName == "spike").map((s) => {
                         s.x = s.x ?? 0;
                         s.y = s.y ?? 0;
 
