@@ -101,16 +101,11 @@ fr.onload = () => {
     composites
         .filter(composite => composite.itemIdentifier.includes("PlatGroup"))
         .map((platGroup) => {
-            let a1 = (platGroup.rotation ?? 0) * (Math.PI/180);
-            let [c1, s1] = [Math.cos(a1), Math.sin(a1)];
-
             // Push platforms to be parsed.
             platforms.push(...platGroup.content[str2].filter((plat) => plat.itemIdentifier.includes("Platform")).map((e) => {
-                let x = (e.x ?? 0) * c1 - (e.y ?? 0) * s1 + (platGroup.x ?? 0);
-                let y = (e.x ?? 0) * s1 + (e.y ?? 0) * c1 + (platGroup.y ?? 0);
-                e.x = x;
-                e.y = y;
-                e.rotation = (e.rotation ?? 0) + (platGroup.rotation ?? 0);
+                e.x = (e.x ?? 0) + (platGroup.x ?? 0);
+                e.y = (e.y ?? 0) + (platGroup.y ?? 0);
+                e.rotation = (e.rotation ?? 0);
                 e.customVariables = {};
                 e.customVariables.CX = platGroup.customVariables.CX;
                 e.customVariables.CY = platGroup.customVariables.CY;
@@ -120,33 +115,50 @@ fr.onload = () => {
             platGroup.content[str2].filter((plat) => plat.itemIdentifier.includes("PlatSpike")).map((platSpike) => {
                 // Push platforms to be parsed.
                 platforms.push(...platSpike.content[str2].map((e) => {
-                    let x = ((e.x ?? 0) + (platSpike.x ?? 0)) * c1 - ((e.y ?? 0) + (platSpike.y ?? 0)) * s1 + (platGroup.x ?? 0);
-                    let y = ((e.x ?? 0) + (platSpike.x ?? 0)) * s1 + ((e.y ?? 0) + (platSpike.y ?? 0)) * c1 + (platGroup.y ?? 0); 
-                    e.x = x;
-                    e.y = y;
-                    e.rotation = (e.rotation ?? 0) + (platGroup.rotation ?? 0);
+                    let startX = (platSpike.x ?? 0) + (platGroup.x ?? 0);
+                    let startY = (platSpike.y ?? 0) + (platGroup.y ?? 0); 
+
+                    let platAngle = ((e.rotation ?? 0) + (platSpike.rotation ?? 0))*(Math.PI/180);
+                    let [pcos, psin] = [Math.cos(platAngle), Math.sin(platAngle)];
+
+                    let xPlat = (e.x ?? 0)*pcos - (e.y ?? 0)*psin;
+                    let yPlat = (e.x ?? 0)*psin + (e.y ?? 0)*pcos;
+
+                    e.x = xPlat + startX;
+                    e.y = yPlat + startY;
+
+                    e.rotation = (e.rotation ?? 0) + (platSpike.rotation ?? 0);
                     e.customVariables = {};
                     e.customVariables.CX = platGroup.customVariables.CX;
                     e.customVariables.CY = platGroup.customVariables.CY;
                     e.customVariables.AV = platGroup.customVariables.AV;
+
+                    // Parse and return spikes.
+                    platSpike.content[str1].map((s) => {
+                        s.x = s.x ?? 0;
+                        s.y = s.y ?? 0;
+
+                        let spikeAngle = (s.rotation ?? 0);
+                        spikeAngle = spikeAngle < 0 ? 360 + spikeAngle : spikeAngle;
+                
+                        let angle = ((s.rotation ?? 0) + (platSpike.rotation ?? 0))*(Math.PI/180);
+                        let [cos, sin] = [Math.cos(angle), Math.sin(angle)];
+                    
+                        let x = (startX + (s.x + offset[spikeAngle/90][0])*pcos - (s.y + offset[spikeAngle/90][1])*psin)/tileSize;
+                        let y = (startY + (s.x + offset[spikeAngle/90][0])*psin + (s.y + offset[spikeAngle/90][1])*pcos)/tileSize;
+
+                        spikes.push({
+                            "points": [x, y, x + cos, y + sin, 0.5*cos - 0.75*sin + x, 0.5*sin + 0.75*cos + y],
+                            "rotation_center": [16 + platGroup.customVariables.CX/tileSize, 9 + platGroup.customVariables.CY/tileSize],
+                            "rotation_velocity": platGroup.customVariables.AV,
+                            "texture": "black"
+                        });
+                    });
+
                     return e;
                 }));
 
-                // Parse and return spikes.
-                platSpike.content[str1].map((s) => {
-                    let spikeAngle = (s.rotation ?? 0);
-                    spikeAngle = spikeAngle < 0 ? 360 + spikeAngle : spikeAngle;
-                    let x = (((s.x ?? 0) + (platSpike.x ?? 0) + offset[spikeAngle/90][0]) * c1 - ((s.y ?? 0) + (platSpike.y ?? 0) + offset[spikeAngle/90][1]) * s1 + (platGroup.x ?? 0)) / tileSize;
-                    let y = (((s.x ?? 0) + (platSpike.x ?? 0) + offset[spikeAngle/90][0]) * s1 + ((s.y ?? 0) + (platSpike.y ?? 0) + offset[spikeAngle/90][1]) * c1 + (platGroup.y ?? 0)) / tileSize;
-                    let angle = a1 + (s.rotation ?? 0)*(Math.PI/180);
-                    let [cos, sin] = [Math.cos(angle), Math.sin(angle)]; 
-                    spikes.push({
-                        "points": [x, y, x + cos, y + sin, 0.5*cos - 0.75*sin + x, 0.5*sin + 0.75*cos + y],
-                        "rotation_center": [16 + platGroup.customVariables.CX/tileSize, 9 + platGroup.customVariables.CY/tileSize],
-                        "rotation_velocity": platGroup.customVariables.AV,
-                        "texture": "black"
-                    });
-                });
+                
             });
     });
 
