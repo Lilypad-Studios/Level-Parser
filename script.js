@@ -49,10 +49,10 @@ fr.onload = () => {
 
     // Gets boundaries
     boundaries = {
-        "left" : constants[0]?.customVariables.LB ?? -16,
-        "right" : constants[0]?.customVariables.RB ?? 48,
-        "down" : constants[0]?.customVariables.DB ?? -32,
-        "up" : constants[0]?.customVariables.UB ?? 50
+        "left" : (constants[0]?.customVariables.LB ?? -16)/tileSize,
+        "right" : (constants[0]?.customVariables.RB ?? 48)/tileSize,
+        "down" : (constants[0]?.customVariables.DB ?? -32)/tileSize,
+        "up" : (constants[0]?.customVariables.UB ?? 50)/tileSize
     }
 
     // Gets meteor probabilities.
