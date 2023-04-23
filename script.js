@@ -21,7 +21,7 @@ let resources;
 let spikes = [];
 
 // Spike offset.
-let offset = [[0,0], [spikeSize, 0], [spikeSize, spikeSize], [0, spikeSize]];
+let offset = [[0, 0], [spikeSize, 0], [spikeSize, spikeSize], [0, spikeSize]];
 
 // Represents the platforms.
 let platforms = [];
@@ -35,6 +35,9 @@ let meteor_probabilities;
 // Represents the boundaries.
 let boundaries;
 
+// Represents the background type.
+let background;
+
 fr.onload = () => {
     data = JSON.parse(fr.result);
     let simples = data.composite.content[str1];
@@ -47,12 +50,15 @@ fr.onload = () => {
     // Gets cooldown.
     cooldown = constants[0]?.customVariables.CD ?? 0;
 
+    // Gets background.
+    background = constants[0]?.customVariables.B ?? 1;
+
     // Gets boundaries
     boundaries = {
-        "left" : (constants[0]?.customVariables.LB ?? -16)/tileSize,
-        "right" : (constants[0]?.customVariables.RB ?? 48)/tileSize,
-        "down" : (constants[0]?.customVariables.DB ?? -32)/tileSize,
-        "up" : (constants[0]?.customVariables.UB ?? 50)/tileSize
+        "left": (constants[0]?.customVariables.LB ?? -16) / tileSize,
+        "right": (constants[0]?.customVariables.RB ?? 48) / tileSize,
+        "down": (constants[0]?.customVariables.DB ?? -32) / tileSize,
+        "up": (constants[0]?.customVariables.UB ?? 50) / tileSize
     }
 
     // Gets meteor probabilities.
@@ -65,16 +71,16 @@ fr.onload = () => {
     // Gets resources.
     resources = simples.filter(e => e.itemIdentifier == "Resource").map((e) => {
         return {
-            "pos": [((e.x ?? 0) + 50)/tileSize, ((e.y ?? 0) + 50)/tileSize],
-            "angle": (e.rotation ?? 0) * (Math.PI/180),
-            "rotation_center" : [16 + (e.customVariables.CX ?? 0)/tileSize, 9 + (e.customVariables.CY ?? 0)/tileSize],
+            "pos": [((e.x ?? 0) + 50) / tileSize, ((e.y ?? 0) + 50) / tileSize],
+            "angle": (e.rotation ?? 0) * (Math.PI / 180),
+            "rotation_center": [16 + (e.customVariables.CX ?? 0) / tileSize, 9 + (e.customVariables.CY ?? 0) / tileSize],
             "rotation_velocity": e.customVariables.AV ?? 0
         };
     });
 
     // Gets spikes with composites.
     composites.filter(e => e.itemIdentifier.includes("PlatSpike")).map((e) => {
-        let a1 = (e.rotation ?? 0) * (Math.PI/180);
+        let a1 = (e.rotation ?? 0) * (Math.PI / 180);
         let [c1, s1] = [Math.cos(a1), Math.sin(a1)];
 
         // Push platforms to be parsed.
@@ -95,13 +101,13 @@ fr.onload = () => {
         e.content[str1].filter((el) => el.imageName == "spike").map((s) => {
             let spikeAngle = (s.rotation ?? 0);
             spikeAngle = spikeAngle < 0 ? 360 + spikeAngle : spikeAngle;
-            let x = (((s.x ?? 0) + offset[spikeAngle/90][0]) * c1 - ((s.y ?? 0) + offset[spikeAngle/90][1]) * s1 + (e.x ?? 0)) / tileSize;
-            let y = (((s.x ?? 0) + offset[spikeAngle/90][0]) * s1 + ((s.y ?? 0) + offset[spikeAngle/90][1]) * c1 + (e.y ?? 0)) / tileSize;
-            let angle = a1 + spikeAngle*(Math.PI/180);
-            let [cos, sin] = [Math.cos(angle), Math.sin(angle)]; 
+            let x = (((s.x ?? 0) + offset[spikeAngle / 90][0]) * c1 - ((s.y ?? 0) + offset[spikeAngle / 90][1]) * s1 + (e.x ?? 0)) / tileSize;
+            let y = (((s.x ?? 0) + offset[spikeAngle / 90][0]) * s1 + ((s.y ?? 0) + offset[spikeAngle / 90][1]) * c1 + (e.y ?? 0)) / tileSize;
+            let angle = a1 + spikeAngle * (Math.PI / 180);
+            let [cos, sin] = [Math.cos(angle), Math.sin(angle)];
             spikes.push({
-                "points": [x, y, x + cos, y + sin, 0.5*cos - 0.75*sin + x, 0.5*sin + 0.75*cos + y],
-                "rotation_center": [16 + e.customVariables.CX/tileSize, 9 + e.customVariables.CY/tileSize],
+                "points": [x, y, x + cos, y + sin, 0.5 * cos - 0.75 * sin + x, 0.5 * sin + 0.75 * cos + y],
+                "rotation_center": [16 + e.customVariables.CX / tileSize, 9 + e.customVariables.CY / tileSize],
                 "rotation_velocity": e.customVariables.AV,
                 "texture": "black"
             });
@@ -127,13 +133,13 @@ fr.onload = () => {
                 // Push platforms to be parsed.
                 platforms.push(...platSpike.content[str2].map((e) => {
                     let startX = (platSpike.x ?? 0) + (platGroup.x ?? 0);
-                    let startY = (platSpike.y ?? 0) + (platGroup.y ?? 0); 
+                    let startY = (platSpike.y ?? 0) + (platGroup.y ?? 0);
 
-                    let platAngle = ((e.rotation ?? 0) + (platSpike.rotation ?? 0))*(Math.PI/180);
+                    let platAngle = ((e.rotation ?? 0) + (platSpike.rotation ?? 0)) * (Math.PI / 180);
                     let [pcos, psin] = [Math.cos(platAngle), Math.sin(platAngle)];
 
-                    let xPlat = (e.x ?? 0)*pcos - (e.y ?? 0)*psin;
-                    let yPlat = (e.x ?? 0)*psin + (e.y ?? 0)*pcos;
+                    let xPlat = (e.x ?? 0) * pcos - (e.y ?? 0) * psin;
+                    let yPlat = (e.x ?? 0) * psin + (e.y ?? 0) * pcos;
 
                     e.x = xPlat + startX;
                     e.y = yPlat + startY;
@@ -151,16 +157,16 @@ fr.onload = () => {
 
                         let spikeAngle = (s.rotation ?? 0);
                         spikeAngle = spikeAngle < 0 ? 360 + spikeAngle : spikeAngle;
-                
-                        let angle = ((s.rotation ?? 0) + (platSpike.rotation ?? 0))*(Math.PI/180);
+
+                        let angle = ((s.rotation ?? 0) + (platSpike.rotation ?? 0)) * (Math.PI / 180);
                         let [cos, sin] = [Math.cos(angle), Math.sin(angle)];
-                    
-                        let x = (startX + (s.x + offset[spikeAngle/90][0])*pcos - (s.y + offset[spikeAngle/90][1])*psin)/tileSize;
-                        let y = (startY + (s.x + offset[spikeAngle/90][0])*psin + (s.y + offset[spikeAngle/90][1])*pcos)/tileSize;
+
+                        let x = (startX + (s.x + offset[spikeAngle / 90][0]) * pcos - (s.y + offset[spikeAngle / 90][1]) * psin) / tileSize;
+                        let y = (startY + (s.x + offset[spikeAngle / 90][0]) * psin + (s.y + offset[spikeAngle / 90][1]) * pcos) / tileSize;
 
                         spikes.push({
-                            "points": [x, y, x + cos, y + sin, 0.5*cos - 0.75*sin + x, 0.5*sin + 0.75*cos + y],
-                            "rotation_center": [16 + platGroup.customVariables.CX/tileSize, 9 + platGroup.customVariables.CY/tileSize],
+                            "points": [x, y, x + cos, y + sin, 0.5 * cos - 0.75 * sin + x, 0.5 * sin + 0.75 * cos + y],
+                            "rotation_center": [16 + platGroup.customVariables.CX / tileSize, 9 + platGroup.customVariables.CY / tileSize],
                             "rotation_velocity": platGroup.customVariables.AV,
                             "texture": "black"
                         });
@@ -169,42 +175,43 @@ fr.onload = () => {
                     return e;
                 }));
 
-                
+
             });
-    });
+        });
 
     // Gets platforms.
     platforms = [...composites.filter(el => el.itemIdentifier.includes("Platform")), ...platforms].map((e) => {
-        let rotation = (e.rotation ?? 0) * (Math.PI/180);
+        let rotation = (e.rotation ?? 0) * (Math.PI / 180);
         let [cos, sin] = [Math.cos(rotation), Math.sin(rotation)];
-        let [x, y] = [(e.x ?? 0)/tileSize, (e.y ?? 0)/tileSize];
-        let [h, w] = [e.height/tileSize, e.width/tileSize];
+        let [x, y] = [(e.x ?? 0) / tileSize, (e.y ?? 0) / tileSize];
+        let [h, w] = [e.height / tileSize, e.width / tileSize];
         return {
             "island": [
-                [x - h*sin, y + h*cos, x, y, x + w*cos, y + w*sin, x - h*sin + w*cos, y + h*cos + w*sin]
+                [x - h * sin, y + h * cos, x, y, x + w * cos, y + w * sin, x - h * sin + w * cos, y + h * cos + w * sin]
             ],
-            "rotation_center": [16 + e.customVariables.CX/tileSize, 9 + e.customVariables.CY/tileSize],
+            "rotation_center": [16 + e.customVariables.CX / tileSize, 9 + e.customVariables.CY / tileSize],
             "rotation_velocity": e.customVariables.AV,
             "size": e.content[str1].length,
             "tiling": e.content[str1].map((t) => {
                 let imageName = t.imageName.match(/\d+/g);
-                let tileIndex = parseInt(imageName[0]) + parseInt(4*imageName[2]);
-                return [Math.round((t.x ?? 0)/tileSize), Math.round((t.y ?? 0)/tileSize), isNaN(tileIndex) ? 0 : tileIndex];
+                let tileIndex = parseInt(imageName[0]) + parseInt(4 * imageName[2]);
+                return [Math.round((t.x ?? 0) / tileSize), Math.round((t.y ?? 0) / tileSize), isNaN(tileIndex) ? 0 : tileIndex];
             })
         };
     });
 
     // Represents the level.
     exp = {
-        "level" : {
-            "player": [0.5 + (player.x ?? 0)/tileSize, 0.5 + (player.y ?? 0)/tileSize],
+        "level": {
+            "player": [0.5 + (player.x ?? 0) / tileSize, 0.5 + (player.y ?? 0) / tileSize],
             "resources": resources,
             "cooldown": cooldown,
             "meteor_probabilities": meteor_probabilities,
             "platforms": platforms,
             "stationary_hazards": spikes,
             "lava_hazards": [],
-            "boundaries": boundaries
+            "boundaries": boundaries,
+            "background": background
         }
     };
 
