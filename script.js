@@ -36,7 +36,7 @@ let meteor_probabilities;
 let boundaries;
 
 // Represents the background type.
-let background;
+let background = [];
 
 fr.onload = () => {
     data = JSON.parse(fr.result);
@@ -51,7 +51,9 @@ fr.onload = () => {
     cooldown = constants[0]?.customVariables.CD ?? 0;
 
     // Gets background.
-    background = constants[0]?.customVariables.B ?? 1;
+    background.push(constants[0]?.customVariables.B ?? 1);
+    background.push(constants[0]?.customVariables.BW ?? 1);
+    background.push(constants[0]?.customVariables.FW ?? 1);
 
     // Gets boundaries
     boundaries = {
