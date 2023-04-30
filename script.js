@@ -20,6 +20,9 @@ let resources;
 // Represents the spikes.
 let spikes = [];
 
+// Represents the lava hazards.
+let lava = [];
+
 // Spike offset.
 let offset = [[0, 0], [spikeSize, 0], [spikeSize, spikeSize], [0, spikeSize]];
 
@@ -57,10 +60,10 @@ fr.onload = () => {
 
     // Gets boundaries
     boundaries = {
-        "left": (constants[0]?.customVariables.LB ?? -16) / tileSize,
-        "right": (constants[0]?.customVariables.RB ?? 48) / tileSize,
-        "down": (constants[0]?.customVariables.DB ?? -32) / tileSize,
-        "up": (constants[0]?.customVariables.UB ?? 50) / tileSize
+        "left": (constants[0]?.customVariables.LB ?? -16*tileSize) / tileSize,
+        "right": (constants[0]?.customVariables.RB ?? 48*tileSize) / tileSize,
+        "down": (constants[0]?.customVariables.DB ?? -32*tileSize) / tileSize,
+        "up": (constants[0]?.customVariables.UB ?? 50*tileSize) / tileSize
     }
 
     // Gets meteor probabilities.
@@ -112,6 +115,25 @@ fr.onload = () => {
                 "rotation_center": [16 + e.customVariables.CX / tileSize, 9 + e.customVariables.CY / tileSize],
                 "rotation_velocity": e.customVariables.AV,
                 "texture": "black"
+            });
+        });
+
+        // Parse and return lava.
+        e.content[str1].filter((el) => el.imageName == "lava").map((s) => {
+            let lavaAngle = (s.rotation ?? 0);
+            lavaAngle = lavaAngle < 0 ? 360 + lavaAngle : lavaAngle;
+            let x = (((s.x ?? 0) + offset[lavaAngle / 90][0]) * c1 - ((s.y ?? 0) + offset[lavaAngle / 90][1]) * s1 + (e.x ?? 0)) / tileSize;
+            let y = (((s.x ?? 0) + offset[lavaAngle / 90][0]) * s1 + ((s.y ?? 0) + offset[lavaAngle / 90][1]) * c1 + (e.y ?? 0)) / tileSize;
+            let angle = a1 + lavaAngle * (Math.PI / 180);
+            let [cos, sin] = [Math.cos(angle), Math.sin(angle)];
+            lava.push({
+                "points": [x - sin, y + cos, x, y, x + cos, y + sin, x - sin + cos, y + cos + sin],
+                "size": s.customVariables.H ?? 1,
+                "warning_time": s.customVariables.WT ?? 2,
+                "cooldown_time": s.customVariables.CT ?? 2,
+                "max_time": s.customVariables.MT ?? 5,
+                "rotation_center": [16 + e.customVariables.CX / tileSize, 9 + e.customVariables.CY / tileSize],
+                "rotation_velocity": e.customVariables.AV
             });
         });
     });
@@ -174,6 +196,31 @@ fr.onload = () => {
                         });
                     });
 
+                    // Parse and return lava.
+                    platSpike.content[str1].filter((el) => el.imageName == "lava").map((s) => {
+                        s.x = s.x ?? 0;
+                        s.y = s.y ?? 0;
+
+                        let lavaAngle = (s.rotation ?? 0);
+                        lavaAngle = lavaAngle < 0 ? 360 + lavaAngle : lavaAngle;
+
+                        let angle = ((s.rotation ?? 0) + (platSpike.rotation ?? 0)) * (Math.PI / 180);
+                        let [cos, sin] = [Math.cos(angle), Math.sin(angle)];
+
+                        let x = (startX + (s.x + offset[lavaAngle / 90][0]) * pcos - (s.y + offset[lavaAngle / 90][1]) * psin) / tileSize;
+                        let y = (startY + (s.x + offset[lavaAngle / 90][0]) * psin + (s.y + offset[lavaAngle / 90][1]) * pcos) / tileSize;
+
+                        lava.push({
+                            "points": [x - sin, y + cos, x, y, x + cos, y + sin, x - sin + cos, y + cos + sin],
+                            "size": s.customVariables.H ?? 1,
+                            "warning_time": s.customVariables.WT ?? 2,
+                            "cooldown_time": s.customVariables.CT ?? 2,
+                            "max_time": s.customVariables.MT ?? 5,
+                            "rotation_center": [16 + platGroup.customVariables.CX / tileSize, 9 + platGroup.customVariables.CY / tileSize],
+                            "rotation_velocity": platGroup.customVariables.AV,
+                        });
+                    });
+
                     return e;
                 }));
 
@@ -211,7 +258,7 @@ fr.onload = () => {
             "meteor_probabilities": meteor_probabilities,
             "platforms": platforms,
             "stationary_hazards": spikes,
-            "lava_hazards": [],
+            "lava_hazards": lava,
             "boundaries": boundaries,
             "background": background
         }
