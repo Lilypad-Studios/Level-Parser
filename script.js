@@ -252,6 +252,7 @@ fr.onload = () => {
     // Represents the level.
     exp = {
         "level": {
+            "camera_keyframes": [],
             "player": [0.5 + (player.x ?? 0) / tileSize, 0.5 + (player.y ?? 0) / tileSize],
             "resources": resources,
             "cooldown": cooldown,
